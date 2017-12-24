@@ -99,13 +99,11 @@ class UnicreditParser(StatementParser):
         (bal_amts, bal_dates) = get_balance_data(_findall(stmt, 'Bal'))
 
         # Should be done afterwards
-        if self.statement.start_balance is None:
-            self.statement.start_balance = bal_amts['OPBD']
-            self.statement.start_date = bal_dates['OPBD']
+        self.statement.start_balance = bal_amts['OPBD']
+        self.statement.start_date = bal_dates['OPBD']
 
-        # FIXME Should be done afterwards
-        self.statement.end_balance = bal_amts.get('CLBD', None)
-        self.statement.end_date = bal_dates.get('CLBD', None)
+        self.statement.end_balance = bal_amts.get('CLBD')
+        self.statement.end_date = bal_dates.get('CLBD')
 
         return _findall(stmt, 'Ntry')
 
