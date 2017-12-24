@@ -13,6 +13,22 @@ from ofxstatement.statement import Statement, StatementLine
 CD_CREDIT = 'CRDT'
 CD_DEBIT = 'DBIT'
 
+def normalize_account_id(account_id):
+    """ Strips dashes from the account_id and the trailing digit as it's not
+    part of the account id, but a CRC and finance apps stripping it either
+
+        IBAN Fields: HUkk bbbs sssx cccc cccc cccc cccx
+        b = National bank code
+        s = Branch code
+        c = Account number
+        x = National check digit"""
+
+    if account_id is None:
+        return account_id
+
+    return account_id.replace('-', '')[:23]
+
+
 class UnicreditPlugin(Plugin):
     """Unicredit (XML)
     """
@@ -21,11 +37,8 @@ class UnicreditPlugin(Plugin):
         """ Initializes and returns the parser object"""
         parser = UnicreditParser(filename)
         # We allow dashes as separator in the config
-        parser.account_id = self.settings.get('account')
 
-        # This is awful
-        if parser.account_id is not None:
-            parser.account_id = parser.account_id.replace('-', '')
+        parser.account_id = normalize_account_id(self.settings.get('account'))
 
         return parser
 
@@ -43,7 +56,7 @@ class UnicreditParser(StatementParser):
         if not stmts:
             raise Exception("No statement data in the file")
 
-        stmt_by_acct = {_find(stmt, 'Acct/Id/Othr/Id').text: stmt for stmt in stmts}
+        stmt_by_acct = {normalize_account_id(_find(stmt, 'Acct/Id/Othr/Id').text): stmt for stmt in stmts}
 
         if self.account_id is None:
             if len(stmts) == 1:
@@ -79,7 +92,7 @@ class UnicreditParser(StatementParser):
         ccy = _find(stmt, 'Acct/Ccy')
 
         bank_id = bnk.text if bnk else 'UNICREDIT'
-        account_id = iban.text
+        account_id = normalize_account_id(iban.text)
         self.statement = Statement(bank_id, account_id, ccy)
 
         # Set balance data
@@ -101,6 +114,9 @@ class UnicreditParser(StatementParser):
 
         # def __init__(self, id=None, date=None, memo=None, amount=None):
         sline = StatementLine()
+
+        # TODO set trntype - see statement.py in ofxstatement
+        # It's now defaulted to 'CHECkK'
 
         crdeb = _find(ntry, 'CdtDbtInd').text
 
