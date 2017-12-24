@@ -123,8 +123,10 @@ class UnicreditParser(StatementParser):
         if crdeb == CD_DEBIT:
             amt = -amt
             payee = _find(ntry, 'NtryDtls/TxDtls/RltdPties/Cdtr/Nm')
+            sline.trntype = 'DEBIT'
         else:
             payee = _find(ntry, 'NtryDtls/TxDtls/RltdPties/Dbtr/Nm')
+            sline.trntype = 'CREDIT'
         if payee is not None:
             payee = payee.text
 
@@ -139,6 +141,8 @@ class UnicreditParser(StatementParser):
 
         svcref = _find(ntry, 'AcctSvcrRef')
         sline.refnum = getattr(svcref, 'text', None)
+        # To have FITID
+        sline.id = sline.refnum
 
         rmtinf = _find(ntry, 'NtryDtls/TxDtls/RmtInf/Ustrd')
         sline.memo = rmtinf.text if (rmtinf is not None and rmtinf.text) else ''
