@@ -122,7 +122,10 @@ class UnicreditParser(StatementParser):
         if crdeb == CD_DEBIT:
             amt = -amt
             payee = _find(ntry, 'NtryDtls/TxDtls/RltdPties/Cdtr/Nm')
-            sline.trntype = 'DEBIT'
+            if _get_text(_find(ntry, 'NtryDtls/TxDtls/RmtInf/Ustrd'), '').startswith('ATM kifizetés'):
+                sline.trntype = 'ATM'
+            else:
+                sline.trntype = 'DEBIT'
         else:
             payee = _find(ntry, 'NtryDtls/TxDtls/RltdPties/Dbtr/Nm')
             sline.trntype = 'CREDIT'
