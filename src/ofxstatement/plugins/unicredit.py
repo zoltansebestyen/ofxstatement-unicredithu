@@ -114,6 +114,27 @@ class UnicreditParser(StatementParser):
 
         # TODO set trntype - see statement.py in ofxstatement
         # It's now defaulted to 'CHECkK'
+        # 11.4.4.3 Transaction Types Used in <TRNTYPE>
+        # Type | Description
+        # CREDIT | Generic credit
+        # DEBIT | Generic debit
+        # INT | Interest earned or paid
+        #   Note: Depends on signage of amount DIV Dividend
+        # FEE | FI fee
+        # SRVCHG | Service charge DEP Deposit
+        # ATM | ATM debit or credit
+        # POS Point of sale debit or credit
+        #  Note: Depends on signage of amount
+        # XFER | Transfer
+        # CHECK | Check
+        # PAYMENT | Electronic payment
+        # CASH | Cash withdrawal
+        # DIRECTDEP | Direct deposit
+        # DIRECTDEBIT | Merchant initiated debit
+        # REPEATPMT | Repeating payment/standing order
+        # HOLD | Only valid in <STMTTRNP>; indicates the amount is under a hold
+        #  Note: Depends on signage of amount and account type
+        # OTHER | Other
 
         crdeb = _find(ntry, 'CdtDbtInd').text
 
