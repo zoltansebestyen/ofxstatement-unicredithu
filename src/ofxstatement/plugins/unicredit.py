@@ -87,12 +87,11 @@ class UnicreditParser(StatementParser):
         stmt = self._pick_matching_statement(stmts)
 
         # Set core Statement data
-        bnk = _find(stmt, 'Ntry/NtryDtls/TxDtls/RltdAgts/CdtrAgt/FinInstnId/Nm')
-        iban = _find(stmt, 'Acct/Id/Othr/Id')
-        ccy = _find(stmt, 'Acct/Ccy')
+        bank_id = _get_text(_find(stmt, 'Acct/Svcr/FinInstnId/BIC'), 'UNICREDIT')
+        iban = _get_text(_find(stmt, 'Acct/Id/Othr/Id'))
+        ccy = _get_text(_find(stmt, 'Acct/Ccy'), 'HUF')
 
-        bank_id = bnk.text if bnk else 'UNICREDIT'
-        account_id = normalize_account_id(iban.text)
+        account_id = normalize_account_id(iban)
         self.statement = Statement(bank_id, account_id, ccy)
 
         # Set balance data
@@ -160,6 +159,9 @@ class UnicreditParser(StatementParser):
         sline.memo += ' ' + addtlinf
 
         return sline
+
+def _get_text(elem, default=None):
+    return elem.text if elem is not None else default
 
 def get_balance_data(bals):
     """Retrieves opening, closing balance data for the statement"""
