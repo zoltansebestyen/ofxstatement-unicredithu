@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
+from datetime import datetime
+import filecmp
+import xml.dom.minidom
+
 import unittest
 
 # from ofxstatement import plugin
 from ofxstatement.plugins.unicredit import UnicreditParser
+from ofxstatement import ofx
 
 class ParserTest(unittest.TestCase):
     def test_no_stmt(self):
@@ -92,3 +97,24 @@ class ParserTest(unittest.TestCase):
             "The account you specified ('12345678123456780000002') is not among "
             "the ones in the file, please configure them with "
             "ofxstatement edit-config: 12345678123456780000000, 12345678123456780000001")
+
+    def test_output(self):
+        """Successful conversion test"""
+        root = "./src/ofxstatement/tests/STATEMENT_12345678_20171130"
+        filename = root + ".xml"
+        uc_parser = UnicreditParser(filename)
+        # We cheat here
+        uc_parser.account_id = '12345678123456780000001'
+        uc_parser.parse()
+
+        writer = ofx.OfxWriter(uc_parser.statement)
+        writer.genTime = datetime(2017, 11, 7, 0, 0, 0)
+        fileh = open(root + '.ofx.tmp', 'w')
+        pretty_print(writer.toxml(), fileh)
+        fileh.close()
+
+        self.assertTrue(filecmp.cmp(root + '.ofx.tmp', root + '.ofx'))
+
+def pretty_print(xmlstr, fileh):
+    dom = xml.dom.minidom.parseString(xmlstr)
+    fileh.write(dom.toprettyxml().replace("\t", "    "))
