@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02" xmlns:ele="http://www.cardinal.hu/electra">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>201711300011</MsgId>
+      <CreDtTm>2017-11-30T00:00:00</CreDtTm>
+      <MsgRcpt>
+        <Nm>John Doe</Nm>
+      </MsgRcpt>
+    </GrpHdr>
+  </BkToCstmrStmt>
+</Document>
