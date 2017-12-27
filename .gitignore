@@ -10,3 +10,6 @@ eggs
 .project
 .pydevproject
 *.sublime*
+.eggs
+disabled
+tests_from_ofx
