@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<!-- 
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:UTF-8
+CHARSET:NONE
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+-->
+<OFX>
+    <SIGNONMSGSRSV1>
+        <SONRS>
+            <STATUS>
+                <CODE>0</CODE>
+                <SEVERITY>INFO</SEVERITY>
+            </STATUS>
+            <DTSERVER>20171107000000</DTSERVER>
+            <LANGUAGE>ENG</LANGUAGE>
+        </SONRS>
+    </SIGNONMSGSRSV1>
+    <BANKMSGSRSV1>
+        <STMTTRNRS>
+            <TRNUID>0</TRNUID>
+            <STATUS>
+                <CODE>0</CODE>
+                <SEVERITY>INFO</SEVERITY>
+            </STATUS>
+            <STMTRS>
+                <CURDEF>HUF</CURDEF>
+                <BANKACCTFROM>
+                    <BANKID>BACXHUHB</BANKID>
+                    <ACCTID>12345678123456780000001</ACCTID>
+                    <ACCTTYPE>CHECKING</ACCTTYPE>
+                </BANKACCTFROM>
+                <BANKTRANLIST>
+                    <DTSTART>20171130</DTSTART>
+                    <DTEND>20171130</DTEND>
+                    <STMTTRN>
+                        <TRNTYPE>CREDIT</TRNTYPE>
+                        <DTPOSTED>20171108</DTPOSTED>
+                        <DTUSER>20171108</DTUSER>
+                        <TRNAMT>999.00</TRNAMT>
+                        <FITID>20171234560008</FITID>
+                        <MEMO> Cr Forgalmi kedvezmény</MEMO>
+                        <REFNUM>20171234560008</REFNUM>
+                    </STMTTRN>
+                    <STMTTRN>
+                        <TRNTYPE>CREDIT</TRNTYPE>
+                        <DTPOSTED>20171124</DTPOSTED>
+                        <DTUSER>20171124</DTUSER>
+                        <TRNAMT>100000.00</TRNAMT>
+                        <FITID>20171234560009</FITID>
+                        <NAME>John Doe</NAME>
+                        <MEMO>Save +IZV 00171234007</MEMO>
+                        <REFNUM>20171234560009</REFNUM>
+                    </STMTTRN>
+                </BANKTRANLIST>
+                <LEDGERBAL>
+                    <BALAMT>1234568.74</BALAMT>
+                    <DTASOF>20171130000000</DTASOF>
+                </LEDGERBAL>
+            </STMTRS>
+        </STMTTRNRS>
+    </BANKMSGSRSV1>
+</OFX>
