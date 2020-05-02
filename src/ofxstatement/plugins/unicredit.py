@@ -53,41 +53,47 @@ class UnicreditParser(StatementParser):
         self.statement = None
 
     def _pick_matching_statement(self, stmts):
+        """Groups statements by account ids and returns the statements the belong
+        to self.account_id"""
         if not stmts:
             raise Exception("No statement data in the file")
 
-        stmt_by_acct = {normalize_account_id(_find(stmt, 'Acct/Id/Othr/Id').text): stmt for stmt in stmts}
+        stmt_by_acct = {
+            normalize_account_id(
+                _find(stmt, 'Acct/Id/Othr/Id').text): stmt for stmt in stmts}
 
         if self.account_id is None:
             if len(stmts) == 1:
                 return stmts[0]
-            else:
-                raise Exception(
-                    "You have more than one accounts, please configure them "
-                    "with ofxstatement edit-config: %s" % ", ".
-                    join(stmt_by_acct.keys()))
+
+            raise Exception(
+                "You have more than one accounts, please configure them "
+                "with ofxstatement edit-config: %s" % ", ".
+                join(stmt_by_acct.keys()))
 
         if self.account_id in stmt_by_acct.keys():
             return stmt_by_acct[self.account_id]
-        else:
-            raise Exception(
-                "The account you specified ('%s') is not among the "
-                "ones in the file, please configure them "
-                "with ofxstatement edit-config: %s" %
-                (self.account_id, ", ".join(stmt_by_acct.keys())))
+
+        raise Exception(
+            "The account you specified ('%s') is not among the "
+            "ones in the file, please configure them "
+            "with ofxstatement edit-config: %s" %
+            (self.account_id, ", ".join(stmt_by_acct.keys())))
 
     def split_records(self):
-        """Main entry point for parsers
+        """Parses the XML/CAMT file, sets start/end balance belonging to self.account_id, and returns statements
+        of that account.
         """
         tree = ET.parse(self.filename)
 
         stmts = _findall(tree, 'BkToCstmrStmt/Stmt')
 
-        # Let's pick the right one.
+        # Pick statement matching self.account_id
         stmt = self._pick_matching_statement(stmts)
 
         # Set core Statement data
-        bank_id = _get_text(_find(stmt, 'Acct/Svcr/FinInstnId/BIC'), 'UNICREDIT')
+        bank_id = _get_text(_find(stmt, 'Acct/Svcr/FinInstnId/BIC'),
+                            'UNICREDIT')
         iban = _get_text(_find(stmt, 'Acct/Id/Othr/Id'))
         ccy = _get_text(_find(stmt, 'Acct/Ccy'), 'HUF')
 
@@ -111,6 +117,9 @@ class UnicreditParser(StatementParser):
 
         # def __init__(self, id=None, date=None, memo=None, amount=None):
         sline = StatementLine()
+
+        # Let's have a default for line parser
+        sline.peer_acct = None
 
         # TODO set trntype - see statement.py in ofxstatement
         # It's now defaulted to 'CHECkK'
@@ -140,6 +149,13 @@ class UnicreditParser(StatementParser):
 
         amtnode = _find(ntry, 'Amt')
         amt = _parse_amount(amtnode)
+
+        txid = _find(ntry, 'NtryDtls/TxDtls/Refs/TxId')
+        if txid.text:
+            sline.txid = txid.text
+            # if sline.txid == '00000000002038112324':
+            #     import pdb; pdb.set_trace()
+
         if crdeb == CD_DEBIT:
             amt = -amt
             payee = _find(ntry, 'NtryDtls/TxDtls/RltdPties/Cdtr/Nm')
@@ -147,9 +163,12 @@ class UnicreditParser(StatementParser):
                 sline.trntype = 'ATM'
             else:
                 sline.trntype = 'DEBIT'
+                sline.peer_acct = _get_text(_find(ntry, 'NtryDtls/TxDtls/RltdPties/CdtrAcct/Id/IBAN'))
         else:
             payee = _find(ntry, 'NtryDtls/TxDtls/RltdPties/Dbtr/Nm')
             sline.trntype = 'CREDIT'
+            sline.peer_acct = _get_text(_find(ntry, 'NtryDtls/TxDtls/RltdPties/DbtrAcct/Id/IBAN'))
+
         if payee is not None:
             payee = payee.text
 
@@ -184,8 +203,10 @@ class UnicreditParser(StatementParser):
 
         return sline
 
+
 def _get_text(elem, default=None):
     return elem.text if elem is not None else default
+
 
 def get_balance_data(bals):
     """Retrieves opening, closing balance data for the statement"""
@@ -203,6 +224,7 @@ def get_balance_data(bals):
 
     return (bal_amts, bal_dates)
 
+
 def _parse_date(dtnode):
     """Parses a ValDt or BookgDt node and returns a datetime object
        holding the data"""
@@ -218,6 +240,7 @@ def _parse_date(dtnode):
     assert dttm is not None
     return datetime.datetime.strptime(dttm.text, "%Y-%m-%dT%H:%M:%S")
 
+
 def _parse_amount(amtnode):
     return float(amtnode.text)
 
@@ -225,14 +248,17 @@ def _parse_amount(amtnode):
 CAMT_PREFIX = 'camt.053'
 CAMT_NS = {CAMT_PREFIX: 'urn:iso:std:iso:20022:tech:xsd:camt.053.001.02'}
 
+
 def _toxpath(spath):
     tags = spath.split('/')
     path = ['%s:%s' % (CAMT_PREFIX, t) for t in tags]
     xpath = './%s' % '/'.join(path)
     return xpath
 
+
 def _find(tree, spath):
     return tree.find(_toxpath(spath), CAMT_NS)
+
 
 def _findall(tree, spath):
     return tree.findall(_toxpath(spath), CAMT_NS)
