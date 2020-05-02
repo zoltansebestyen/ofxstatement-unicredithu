@@ -23,7 +23,7 @@ class RunTests(TestCommand):
         res = runner.run(tests)
         sys.exit(not res.wasSuccessful())
 
-version = "0.0.1"
+version = "0.0.2"
 
 with open('README.rst') as f:
     long_description = f.read()
@@ -51,7 +51,7 @@ setup(name='ofxstatement-unicredithu',
       namespace_packages=["ofxstatement", "ofxstatement.plugins"],
       entry_points={
           'ofxstatement':
-          ['unicredit = ofxstatement.plugins.unicredit:UnicreditPlugin']
+          ['unicredithu = ofxstatement.plugins.unicredit:UnicreditPlugin']
           },
       package_dir={'': 'src'},
       install_requires=['ofxstatement',
